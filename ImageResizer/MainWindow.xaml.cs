@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using ImageProcessor;
 using ImageProcessor.Imaging;
+using ImageProcessor.Imaging.Formats;
+using Size = System.Drawing.Size;
 
 namespace ImageResizer
 {
@@ -41,7 +45,7 @@ namespace ImageResizer
 
             Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 2 }, s => 
             {
-                string fullPath = System.IO.Path.GetFullPath(s);
+                string fullPath = Path.GetFullPath(s);
 
                 string destinationFullPath = destDir + fullPath.Replace(sourceDir, string.Empty);
 
@@ -52,7 +56,7 @@ namespace ImageResizer
                 }
             });
 
-            System.Windows.MessageBox.Show("finished");
+            MessageBox.Show("finished");
         }
 
         private bool CheckFile(FileInfo fileInfo)
@@ -63,22 +67,20 @@ namespace ImageResizer
         static bool HasJpegExtension(string filename)
         {
             // add other possible extensions here
-            return System.IO.Path.GetExtension(filename).Equals(".jpg", StringComparison.InvariantCultureIgnoreCase)
-                || System.IO.Path.GetExtension(filename).Equals(".jpeg", StringComparison.InvariantCultureIgnoreCase);
+            return Path.GetExtension(filename).Equals(".jpg", StringComparison.InvariantCultureIgnoreCase)
+                || Path.GetExtension(filename).Equals(".jpeg", StringComparison.InvariantCultureIgnoreCase);
         }
 
         private bool Resize(string sourceFileName, string destinationFileName)
         {
-            if (!System.IO.File.Exists(destinationFileName))
+            if (!File.Exists(destinationFileName))
             {
                 float width = 0;
                 float height = 0;
 
-                using (System.IO.FileStream file = new System.IO.FileStream(sourceFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                using (FileStream file = new FileStream(sourceFileName, FileMode.Open, FileAccess.Read))
                 {
-                    using (System.Drawing.Image tif = System.Drawing.Image.FromStream(stream: file,
-                                            useEmbeddedColorManagement: false,
-                                            validateImageData: false))
+                    using (Image tif = Image.FromStream(file, false, false))
                     {
                         width = tif.Width / 2;
                         height = tif.Height / 2;
@@ -92,16 +94,16 @@ namespace ImageResizer
                 }
 
                 // Read a file and resize it.
-                byte[] photoBytes = System.IO.File.ReadAllBytes(sourceFileName);
+                byte[] photoBytes = File.ReadAllBytes(sourceFileName);
                 int quality = 70;
 
-                ImageProcessor.Imaging.Formats.JpegFormat format = new ImageProcessor.Imaging.Formats.JpegFormat();
+                JpegFormat format = new JpegFormat();
             
-                System.Drawing.Size size = new System.Drawing.Size((int) width, (int) height);
+                Size size = new Size((int) width, (int) height);
                 
-                using (System.IO.MemoryStream inStream = new System.IO.MemoryStream(photoBytes))
+                using (MemoryStream inStream = new MemoryStream(photoBytes))
                 {
-                        using (ImageProcessor.ImageFactory imageFactory = new ImageProcessor.ImageFactory(true))
+                        using (ImageFactory imageFactory = new ImageFactory(true))
                         {
                             ResizeLayer resizeLayer = new ResizeLayer(size, ImageProcessor.Imaging.ResizeMode.Crop);
                             // Load, resize, set the format and quality and save an image.
