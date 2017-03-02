@@ -73,6 +73,9 @@ namespace ImageResizer
 
         private bool Resize(string sourceFileName, string destinationFileName)
         {
+            // The wolf made a change
+            // So I'm going to try and push this back
+          
             if (!File.Exists(destinationFileName))
             {
                 float width = 0;
